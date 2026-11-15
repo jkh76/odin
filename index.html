@@ -46,7 +46,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg label{flex:1 0 44px}
 .seg input{position:absolute;opacity:0;pointer-events:none}
-.seg span{display:block;text-align:center;padding:9px 0;border:1px solid var(--sea-3);border-radius:9px;background:var(--sea)}
+.seg span{display:block;text-align:center;padding:9px 6px;border:1px solid var(--sea-3);border-radius:9px;background:var(--sea)}
 .seg input:checked+span{background:var(--ember);border-color:var(--ember);color:#231503;font-weight:600}
 .seg input:focus-visible+span{outline:2px solid var(--ember);outline-offset:2px}
 .check{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--sea-3);border-radius:10px;background:var(--sea);margin-bottom:10px}
@@ -129,6 +129,7 @@ footer{color:var(--mist);font-size:12px}
     <summary>규칙 요약</summary>
     <ul>
       <li>6가지 색, 숫자 1~9 카드를 9장씩 받습니다. 손패를 먼저 비우면 그 판이 끝납니다.</li>
+      <li>첫 판의 선은 무작위입니다. 다음 판의 선은 설정에 따라 손패를 먼저 턴 사람(기본) 또는 직전 선의 다음 사람(공식 규칙)이 잡습니다.</li>
       <li>라운드의 첫 플레이어는 1장만 냅니다. 단, 손패 전체가 같은 색이거나 같은 숫자면 한 번에 모두 낼 수 있습니다.</li>
       <li>다음 플레이어는 테이블 카드와 같은 장수 또는 1장 더 많게 내거나 패스합니다.</li>
       <li>여러 장은 모두 같은 숫자이거나 모두 같은 색이어야 합니다. 큰 숫자부터 이어 붙인 수가 값입니다(9와 5는 95). 값이 테이블보다 커야 합니다.</li>
@@ -250,7 +251,7 @@ const NAMES=['나','비요른','아스트리드','라그나','프레이야','시
 const SUIT_BY_ID=Object.fromEntries(SUITS.map(s=>[s.id,s]));
 const app=document.getElementById('app'), btnNew=document.getElementById('btn-new');
 let G=null, gen=0;
-const UI={sel:new Set(),sort:'color',cfg:{n:3,target:15,goat:true,fourSuits:true}};
+const UI={sel:new Set(),sort:'color',cfg:{n:3,target:15,goat:true,fourSuits:true,lead:'winner'}};
 
 /* 소리: 음원 파일 없이 Web Audio로 합성 */
 const Snd={
@@ -334,7 +335,7 @@ function log(t){G.log.unshift(t); if(G.log.length>5) G.log.length=5;}
 /* 진행 */
 function newGame(){
   gen++;
-  const c=UI.cfg, opts={goat:c.goat,fourSuits:c.n===2&&c.fourSuits,target:c.target};
+  const c=UI.cfg, opts={goat:c.goat,fourSuits:c.n===2&&c.fourSuits,target:c.target,lead:c.lead};
   G={opts,players:[],starter:Math.floor(Math.random()*c.n),handNo:0,log:[]};
   for(let i=0;i<c.n;i++) G.players.push({name:NAMES[i],human:i===0,hand:[],score:0});
   startHand();
@@ -419,6 +420,8 @@ function renderSetup(){
   app.innerHTML='<section class="panel"><h2>게임 설정</h2>'
    +'<div class="field"><span>인원 (나 + 컴퓨터)</span><div class="seg">'+seg('cfg-n',[2,3,4,5,6],c.n,'명')+'</div></div>'
    +'<div class="field"><span>게임 종료 점수</span><div class="seg">'+seg('cfg-target',[10,15,20],c.target,'점','-')+'</div></div>'
+   +'<div class="field"><span>다음 판 선 플레이어</span><div class="seg">'
+   +[['winner','손패를 먼저 턴 사람'],['rotate','차례대로 돌아가며']].map(([v,l])=>'<label><input type="radio" name="cfg-lead" id="cfg-lead-'+v+'" value="'+v+'"'+(c.lead===v?' checked':'')+'><span>'+l+'</span></label>').join('')+'</div></div>'
    +'<label class="check" for="cfg-goat"><input type="checkbox" id="cfg-goat"'+(c.goat?' checked':'')+'><span><b>프로모 카드 포함: 심술 염소 (0)</b><small>아무 색으로 쓸 수 있는 0 카드 1장을 덱에 섞습니다. 판이 끝날 때 들고 있으면 -5점.</small></span></label>'
    +(c.n===2?'<label class="check" for="cfg-four"><input type="checkbox" id="cfg-four"'+(c.fourSuits?' checked':'')+'><span><b>2인 추천 규칙: 4가지 색만 사용</b><small>두 색을 빼서 더 빠르고 치열하게 진행합니다.</small></span></label>':'')
    +'<button class="btn primary" type="button" data-act="start" style="width:100%">게임 시작</button></section>';
@@ -481,7 +484,7 @@ app.addEventListener('click',e=>{
   const act=el.dataset.act, id=el.dataset.id;
   if(act==='start') newGame();
   else if(act==='setup'){gen++; G=null; render();}
-  else if(act==='nexthand'){G.starter=(G.starter+1)%G.players.length; startHand();}
+  else if(act==='nexthand'){G.starter=G.opts.lead==='winner'?G.result.winner:(G.starter+1)%G.players.length; startHand();}
   else if(act==='sort'){UI.sort=UI.sort==='color'?'number':'color'; render();}
   else if(act==='sel'){ if(G.phase==='pick') return; UI.sel.has(id)?UI.sel.delete(id):UI.sel.add(id); render(); }
   else if(act==='take'){ if(G.phase==='pick') humanPick(id); }
@@ -496,6 +499,7 @@ app.addEventListener('change',e=>{
   const t=e.target, c=UI.cfg;
   if(t.name==='cfg-n'){c.n=Number(t.value); render();}
   else if(t.name==='cfg-target') c.target=Number(t.value);
+  else if(t.name==='cfg-lead') c.lead=t.value;
   else if(t.id==='cfg-goat') c.goat=t.checked;
   else if(t.id==='cfg-four') c.fourSuits=t.checked;
 });
