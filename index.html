@@ -44,6 +44,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 .btn{border:1px solid var(--sea-3);background:var(--sea-2);border-radius:10px;padding:10px 14px;min-height:44px}
 .btn.primary{background:var(--ember);border-color:var(--ember);color:#231503;font-weight:600}
 .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.hint{background:rgba(240,162,58,.22);border-color:rgba(240,162,58,.6);color:#ffe2b8}   /* 낼 카드가 없어 패스만 가능할 때 */
 .btn.small{padding:6px 10px;min-height:34px;font-size:13px}
 .panel{background:var(--sea-2);border:1px solid var(--sea-3);border-radius:14px;padding:14px}
 
@@ -64,13 +65,21 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 /* 상대 */
 .opps{display:flex;gap:8px;flex-wrap:wrap}
 .opp{flex:1 1 150px;background:var(--sea-2);border:1px solid var(--sea-3);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
-.opp.turn{border-color:var(--ember);box-shadow:0 0 0 1px var(--ember) inset}
+.opp{position:relative}
 .opp .nm{font-weight:600;display:flex;justify-content:space-between;gap:6px}
 .opp .nm i{font-style:normal;color:var(--mist);font-weight:400;font-variant-numeric:tabular-nums}
 .opp .cnt{font-size:13px;color:var(--mist)}
 .opp .cnt b{color:var(--ice);font-family:var(--font-display);font-weight:400;font-size:18px}
 .opp .act{font-size:12px;color:var(--ember);min-height:18px}
 .opp .warn{color:var(--danger)}
+/* 상대가 테이블에서 가장 최근에 가져간 카드 (다시 내기 전까지) */
+.opp .taken{display:flex;align-items:center;gap:3px;flex-wrap:wrap;min-height:30px;font-size:11.5px;color:var(--mist)}
+.opp .taken .card.mini{width:22px;height:32px;border-radius:4px}
+.opp .taken .card.mini .n{font-size:15px}.opp .taken .card.mini .s{font-size:7px}.opp .taken .card.mini::before{height:3px}
+.opp .taken .card.mini.goat .s{font-size:6px}
+.opp .taken .card.new{animation:takenNew 1.6s ease-out}
+@keyframes takenNew{0%{transform:scale(1.6);box-shadow:0 0 0 3px var(--ember),0 0 14px var(--ember)}60%{transform:scale(1);box-shadow:0 0 0 2px var(--ember)}100%{box-shadow:none}}
+@media (prefers-reduced-motion:reduce){.opp .taken .card.new{animation:none}}
 
 /* 테이블 */
 .table{background:#0f1b25;border:1px dashed var(--sea-3);border-radius:14px;padding:12px;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
@@ -82,7 +91,8 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
 /* 카드 */
 .card{--c:var(--k);position:relative;width:50px;height:74px;border-radius:8px;border:2px solid var(--c);background:var(--bone);color:var(--c);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;flex:none;transition:transform .12s}
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;flex:none;
+  transition:translate .2s cubic-bezier(.3,1.4,.5,1),rotate .2s ease,box-shadow .2s,filter .2s}
 .card .n{font-family:var(--font-display);font-size:34px;line-height:1}
 .card .s{font-size:13px;line-height:1.2}
 .card::before{content:"";position:absolute;left:0;right:0;top:0;height:7px;background:var(--c);border-radius:5px 5px 0 0}
@@ -91,20 +101,49 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 .card.goat::before{background:linear-gradient(90deg,var(--r),var(--o),var(--g),var(--b),var(--p),var(--k))}
 .card.goat .s{font-size:11px;font-weight:600}
 button.card{cursor:pointer}
-.card.sel{transform:translateY(-10px);box-shadow:0 0 0 3px var(--ember)}
+.card.sel{box-shadow:0 0 0 3px var(--ember)}
+/* 뒤집기용 카드 뒷면 (애니메이션 중에만 붙음) */
+.card .back{position:absolute;inset:-2px;border-radius:8px;z-index:2;border:2px solid #0b141c;
+  background:radial-gradient(circle at 50% 50%,var(--ember) 0 3px,transparent 4px),
+  repeating-linear-gradient(45deg,#1c3040 0 5px,#284558 5px 10px)}
 .card.pickable{box-shadow:0 0 0 3px var(--ember);animation:pulse 1.1s ease-in-out infinite}
 .card.mini{width:30px;height:44px;border-radius:5px;border-width:1.5px}
 .card.mini .n{font-size:20px} .card.mini .s{font-size:9px} .card.mini::before{height:4px}
 .card.mini.goat .s{font-size:8px}
 @keyframes pulse{50%{box-shadow:0 0 0 5px rgba(240,162,58,.45)}}
-@media (prefers-reduced-motion:reduce){.card{transition:none}.card.pickable{animation:none}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card.pickable,.hand .card.can{animation:none}}
 
 /* 내 손패 */
 .me{background:var(--sea-2);border:1px solid var(--sea-3);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:12px}
-.me.turn{border-color:var(--ember);box-shadow:0 0 0 1px var(--ember)}
+.me{position:relative}
+/* 차례 표시: 테두리를 따라 빛이 흐름 */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.me.turn,.opp.turn{border-color:rgba(240,162,58,.35);box-shadow:0 0 22px rgba(240,162,58,.2)}
+.me.turn::before,.opp.turn::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;z-index:1;
+  background:conic-gradient(from var(--ang),transparent 0deg 190deg,rgba(240,162,58,.25) 250deg,var(--ember) 320deg,#fff3cf 350deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+  animation:spin 2.4s linear infinite;animation-delay:var(--t-spin,0ms)}
+@keyframes spin{to{--ang:360deg}}
+@media (prefers-reduced-motion:reduce){.me.turn::before,.opp.turn::before{animation:none;background:var(--ember)}}
 .me .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .me .top b{font-weight:600}
-.hand{display:flex;flex-wrap:wrap;gap:6px;padding-top:10px;justify-content:center}
+/* 손패 부채꼴: --fo는 가운데로부터의 거리, --sp/--deg/--cv는 JS가 폭에 맞춰 계산 */
+.hand{display:flex;flex-wrap:nowrap;justify-content:center;padding:28px 4px 16px}
+.hand .card{margin-left:calc(var(--sp,40px) - 50px);transform-origin:50% 130%;
+  rotate:calc(var(--fo,0) * var(--deg,4) * 1deg);
+  translate:0 calc(var(--fo,0) * var(--fo,0) * var(--cv,0) * 1px + var(--lift,0px));
+  box-shadow:-2px 3px 8px rgba(0,0,0,.35)}
+.hand .card:first-child{margin-left:0}
+.hand .card:active{--lift:-10px}
+.hand .card.can{animation:canglow 1.8s ease-in-out infinite;animation-delay:var(--t-pulse,0ms)}
+@media (hover:hover){
+  .hand .card:hover{--lift:-14px;z-index:3;animation:none;box-shadow:0 0 0 2px rgba(240,162,58,.75),0 0 18px rgba(240,162,58,.55)}}
+.hand .card.sel{--lift:-22px;z-index:2;animation:none;box-shadow:0 0 0 3px var(--ember),0 10px 22px rgba(240,162,58,.45)}
+.hand.limit .card:not(.can):not(.sel){filter:brightness(.6) saturate(.6)}
+@keyframes canglow{
+  0%,100%{box-shadow:-2px 3px 8px rgba(0,0,0,.35),0 0 0 0 rgba(240,162,58,0)}
+  50%{box-shadow:-2px 3px 8px rgba(0,0,0,.35),0 0 0 2px rgba(240,162,58,.6),0 0 14px rgba(240,162,58,.45)}}
 .actions{display:flex;gap:8px}
 .actions .btn{flex:1}
 .actions .btn.primary{flex:2}
@@ -363,10 +402,11 @@ function neg(v){return v?'-'+v:'0';}
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 function cardLabel(c){return c.goat?'심술 염소 0':SUIT_BY_ID[c.s].name+' '+c.n;}
 function cardHTML(c,o={}){
-  const cls=['card',c.goat?'goat':'s'+c.s]; if(o.mini)cls.push('mini'); if(o.sel)cls.push('sel'); if(o.pick)cls.push('pickable');
+  const cls=['card',c.goat?'goat':'s'+c.s]; if(o.mini)cls.push('mini'); if(o.sel)cls.push('sel'); if(o.pick)cls.push('pickable'); if(o.can)cls.push('can');
+  const st=o.style?' style="'+o.style+'"':'';
   const inner='<span class="n">'+c.n+'</span><span class="s">'+(c.goat?'염소':SUIT_BY_ID[c.s].sym)+'</span>';
-  if(o.act) return '<button type="button" class="'+cls.join(' ')+'" data-act="'+o.act+'" data-id="'+c.id+'" aria-label="'+cardLabel(c)+'"'+(o.sel?' aria-pressed="true"':'')+'>'+inner+'</button>';
-  return '<span class="'+cls.join(' ')+'" role="img" aria-label="'+cardLabel(c)+'">'+inner+'</span>';
+  if(o.act) return '<button type="button" class="'+cls.join(' ')+'"'+st+' data-act="'+o.act+'" data-id="'+c.id+'" aria-label="'+cardLabel(c)+'"'+(o.act==='sel'?' aria-pressed="'+!!o.sel+'"':'')+'>'+inner+'</button>';
+  return '<span class="'+cls.join(' ')+'" data-cid="'+c.id+'" role="img" aria-label="'+cardLabel(c)+'">'+inner+'</span>';
 }
 function sortHand(h){
   return h.slice().sort((a,b)=>UI.sort==='color'
@@ -386,7 +426,8 @@ function newGame(){
 function startHand(){
   G.handNo++;
   const deck=shuffle(buildDeck(G.opts));
-  for(const p of G.players) p.hand=deck.splice(0,9);
+  for(const p of G.players){p.hand=deck.splice(0,9); p.taken=null;}
+  FX.deal=true;
   G.table=null; G.turn=G.starter; G.phase='play'; G.acts={}; G.pick=null; G.result=null; G.note='';
   UI.sel.clear();
   log(G.handNo+'번째 판 시작. '+G.players[G.starter].name+'부터');
@@ -416,25 +457,32 @@ function doPass(pi){
 }
 function doPlay(pi,cards,take){
   const p=G.players[pi], ids=new Set(cards.map(c=>c.id)), prev=G.table;
+  captureFly(pi,cards);
+  if(p.human&&prev&&prev.cards.length===1) captureTake(prev.cards[0].id,app.querySelector('.table [data-cid="'+prev.cards[0].id+'"]'));
   p.hand=p.hand.filter(c=>!ids.has(c.id));
+  if(p.taken&&ids.has(p.taken.id)) p.taken=null;   /* 가져간 카드를 다시 내면 표시에서 뺌 */
   G.table={cards:sortDesc(cards),owner:pi,count:cards.length,value:valueOf(cards)};
   G.acts={}; G.acts[pi]=cards.length+'장 냄 ('+G.table.value+')';
   G.note='';
   log(p.name+' '+cards.length+'장, 값 '+G.table.value);
-  Snd.card();
+  /* 날아가는 카드가 테이블에 닿는 순간에 소리 */
+  const willPick=p.human&&prev&&prev.cards.length>1;
+  if(FX.fly&&p.hand.length&&!willPick) setTimeout(()=>Snd.card(),(p.human?FLY_MS.me:FLY_MS.ai)*0.78); else Snd.card();
   if(!p.hand.length){endHand(pi);return;}
   if(prev){
     if(p.human){
       if(prev.cards.length===1){p.hand.push(prev.cards[0]); G.note=cardLabel(prev.cards[0])+' 카드를 가져왔어요.';}
       else{G.phase='pick'; G.pick=prev.cards; render(); return;}
     }else{
-      p.hand.push(take); log(p.name+' '+cardLabel(take)+' 가져감');
+      p.hand.push(take); p.taken=take; G.newTaken=take.id; log(p.name+' '+cardLabel(take)+' 가져감');
     }
   }
   next();
 }
 function humanPick(id){
   const c=G.pick.find(x=>x.id===id); if(!c) return;
+  captureTake(id,app.querySelector('.table [data-id="'+id+'"]'));
+  if(FX.fly) setTimeout(()=>Snd.card(),FLY_MS.me*0.78);
   G.players[0].hand.push(c); G.pick=null; G.phase='play';
   G.note=cardLabel(c)+' 카드를 가져왔어요.';
   next();
@@ -473,8 +521,11 @@ function renderSetup(){
 }
 function oppHTML(p,i){
   const act=G.acts[i]||'';
-  return '<div class="opp'+(G.turn===i&&G.phase!=='handEnd'?' turn':'')+'"><div class="nm"><span>'+esc(p.name)+'</span><i>'+neg(p.score)+'점</i></div>'
+  return '<div class="opp'+(G.turn===i&&G.phase!=='handEnd'?' turn':'')+'" data-i="'+i+'"><div class="nm"><span>'+esc(p.name)+'</span><i>'+neg(p.score)+'점</i></div>'
     +'<div class="cnt">손패 <b'+(p.hand.length<=2?' class="warn"':'')+'>'+p.hand.length+'</b>장</div>'
+    +'<div class="taken" aria-label="가져간 카드">'+(p.taken
+        ?cardHTML(p.taken,{mini:true}).replace('class="card','class="'+(p.taken.id===G.newTaken?'card new':'card'))+' 방금 가져감'
+        :'가져간 카드 없음')+'</div>'
     +'<div class="act">'+esc(G.turn===i&&G.phase==='play'&&!act?'생각 중…':act)+'</div></div>';
 }
 function tableHTML(){
@@ -484,6 +535,13 @@ function tableHTML(){
   return '<div class="who">'+esc(G.players[G.table.owner].name)+'이(가) 낸 카드</div><div class="row">'+G.table.cards.map(c=>cardHTML(c)).join('')+'</div><div class="val">값 '+G.table.value+'</div>';
 }
 function selectedCards(){return G.players[0].hand.filter(c=>UI.sel.has(c.id));}
+function playState(){
+  const me=G.players[0], myTurn=G.turn===0&&G.phase==='play';
+  const sel=selectedCards(), chk=checkPlay(sel,G.table,me.hand);
+  let label='카드 내기';
+  if(myTurn&&sel.length) label=chk.ok?sel.length+'장 내기 (값 '+valueOf(sel)+')':chk.msg;
+  return {label,ok:myTurn&&chk.ok};
+}
 function renderGame(){
   const me=G.players[0], myTurn=G.turn===0&&G.phase==='play';
   const sel=selectedCards(), chk=checkPlay(sel,G.table,me.hand);
@@ -494,17 +552,18 @@ function renderGame(){
     else{status='내 차례: '+G.table.count+'장 또는 '+(G.table.count+1)+'장, '+G.table.value+'보다 큰 값'; sub='낼 수 없거나 아끼고 싶으면 패스하세요.';}
     if(G.note) sub=G.note+' '+sub;
   }else{status=G.players[G.turn].name+'의 차례'; sub=G.note;}
-  let playLabel='카드 내기';
-  if(myTurn&&sel.length) playLabel=chk.ok?sel.length+'장 내기 (값 '+valueOf(sel)+')':chk.msg;
+  const ps=playState(), playLabel=ps.label;
+  const hs=sortHand(me.hand), mid=(hs.length-1)/2;
+  const can=(myTurn&&G.table)?new Set(legalPlays(me.hand,G.table).flat().map(c=>c.id)):null;
   app.innerHTML='<div class="wrap" style="padding:0">'
    +'<div class="opps">'+G.players.map((p,i)=>i?oppHTML(p,i):'').join('')+'</div>'
    +'<div class="table">'+tableHTML()+'</div>'
    +'<div class="status" role="status">'+esc(status)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>'
    +'<section class="me'+(myTurn||G.phase==='pick'?' turn':'')+'"><div class="top"><span><b>내 손패</b> '+me.hand.length+'장 · '+neg(me.score)+'점 (-'+G.opts.target+'점에 끝)</span>'
    +'<button class="btn small" type="button" data-act="sort">'+(UI.sort==='color'?'숫자순 정렬':'색깔순 정렬')+'</button></div>'
-   +'<div class="hand">'+sortHand(me.hand).map(c=>cardHTML(c,{act:'sel',sel:UI.sel.has(c.id)})).join('')+'</div>'
-   +'<div class="actions"><button class="btn" type="button" data-act="pass"'+(myTurn&&G.table?'':' disabled')+'>패스</button>'
-   +'<button class="btn primary" type="button" data-act="play"'+(myTurn&&chk.ok?'':' disabled')+'>'+esc(playLabel)+'</button></div></section>'
+   +'<div class="hand'+(can?' limit':'')+'">'+hs.map((c,i)=>cardHTML(c,{act:'sel',sel:UI.sel.has(c.id),can:can&&can.has(c.id),style:'--fo:'+(i-mid)})).join('')+'</div>'
+   +'<div class="actions"><button class="btn'+(can&&!can.size?' hint':'')+'" type="button" data-act="pass"'+(myTurn&&G.table?'':' disabled')+'>패스</button>'
+   +'<button class="btn primary" type="button" data-act="play"'+(ps.ok?'':' disabled')+'>'+esc(playLabel)+'</button></div></section>'
    +'<ul class="log" aria-label="진행 기록">'+G.log.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul></div>';
 }
 function renderHandEnd(){
@@ -532,7 +591,104 @@ function showBurst(win){
 function render(){
   btnNew.hidden=!G;
   if(!G) renderSetup(); else if(G.phase==='handEnd') renderHandEnd(); else renderGame();
+  afterRender();
 }
+
+/* 연출: 카드 날리기(FLIP), 3D 뒤집기, 부채꼴 손패 */
+const FLY_MS={me:520,ai:600};
+const FX={fly:null,take:null,deal:false,
+  rm:window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):{matches:false},
+  ok(){return !this.rm.matches&&typeof Element.prototype.animate==='function';}};
+function center(r){return {x:r.left+r.width/2,y:r.top+r.height/2};}
+function captureFly(pi,cards){
+  FX.fly=null; if(!FX.ok()) return;
+  const human=G.players[pi].human, from={};
+  if(human){
+    for(const c of cards){
+      const el=app.querySelector('.hand [data-id="'+c.id+'"]');
+      if(el) from[c.id]={...center(el.getBoundingClientRect()),rot:parseFloat(getComputedStyle(el).rotate)||0};
+    }
+  }else{
+    const el=app.querySelector('.opp[data-i="'+pi+'"]');
+    if(el){const pt=center(el.getBoundingClientRect()); for(const c of cards) from[c.id]={...pt,rot:0};}
+  }
+  FX.fly={from,human,ids:cards.map(c=>c.id)};
+}
+function captureTake(id,el){ FX.take=null; if(FX.ok()&&el) FX.take={id,from:center(el.getBoundingClientRect())}; }
+function addBack(el,dur,at,delay){
+  const b=document.createElement('span'); b.className='back'; b.setAttribute('aria-hidden','true'); el.appendChild(b);
+  const a=b.animate([{opacity:1},{opacity:1,offset:at},{opacity:0,offset:at},{opacity:0}],{duration:dur,delay,fill:'both'});
+  a.onfinish=a.oncancel=()=>b.remove();
+}
+const T3=(x,y,rz,ry,s)=>'perspective(700px) translate('+x+'px,'+y+'px) rotate('+rz+'deg) rotateY('+ry+'deg) scale('+s+')';
+function runFly(){
+  const f=FX.fly; if(!f) return;
+  const els=f.ids.map(id=>app.querySelector('.table [data-cid="'+id+'"]')).filter(Boolean);
+  if(!els.length){ if(G.phase!=='pick') FX.fly=null; return; }   /* 가져올 카드 고르는 중이면 고른 뒤에 날림 */
+  FX.fly=null;
+  const dur=f.human?FLY_MS.me:FLY_MS.ai, gap=60;
+  els.forEach((el,i)=>{
+    const src=f.from[el.dataset.cid]; if(!src) return;
+    const to=center(el.getBoundingClientRect()), dx=src.x-to.x, dy=src.y-to.y;
+    const spin=src.rot+(Math.random()*2-1)*26, ry=f.human?0:180, s0=f.human?1:.45;
+    el.animate([
+      {transform:T3(dx,dy,spin,ry,s0),easing:'cubic-bezier(.3,.6,.4,1)'},
+      {transform:T3(dx*.12,dy*.12,spin*.25,f.human?0:90,.95),offset:.55,easing:'ease-out'},
+      {transform:T3(0,0,0,0,1.18),offset:.8,easing:'ease-in-out'},
+      {transform:T3(0,0,0,0,.96),offset:.9},
+      {transform:T3(0,0,0,0,1)}
+    ],{duration:dur,delay:i*gap,fill:'backwards'});
+    if(!f.human) addBack(el,dur,.55,i*gap);   /* 상대 카드는 뒷면으로 날아와 뒤집힘 */
+  });
+  const tb=app.querySelector('.table');
+  if(tb) tb.animate([{boxShadow:'0 0 0 0 rgba(240,162,58,0)'},{boxShadow:'0 0 30px 3px rgba(240,162,58,.35)',offset:.3},{boxShadow:'0 0 0 0 rgba(240,162,58,0)'}],
+    {duration:700,delay:dur*.78+(els.length-1)*gap});
+}
+function runTake(){
+  const t=FX.take; if(!t) return; FX.take=null;
+  const el=app.querySelector('.hand [data-id="'+t.id+'"]'); if(!el) return;
+  const to=center(el.getBoundingClientRect()), dx=t.from.x-to.x, dy=t.from.y-to.y, dur=700, delay=120;
+  el.animate([
+    {transform:T3(dx,dy,0,180,.9)},
+    {transform:T3(dx*.3,dy*.3-30,0,90,1.12),offset:.5},
+    {transform:T3(0,-8,0,0,1.08),offset:.8},
+    {transform:T3(0,0,0,0,1)}
+  ],{duration:dur,delay,easing:'ease-out',fill:'backwards'});
+  addBack(el,dur,.5,delay);
+}
+function runDeal(){
+  if(!FX.deal) return; FX.deal=false;
+  const tb=app.querySelector('.table'); if(!tb) return;
+  const from=center(tb.getBoundingClientRect()), dur=540, gap=40;
+  app.querySelectorAll('.hand .card').forEach((el,i)=>{
+    const to=center(el.getBoundingClientRect()), dx=from.x-to.x, dy=from.y-to.y;
+    el.animate([
+      {transform:T3(dx,dy,-20,180,.6),opacity:0},
+      {transform:T3(dx*.35,dy*.35,-6,90,.95),opacity:1,offset:.5},
+      {transform:T3(0,-6,0,0,1.06),offset:.8},
+      {transform:T3(0,0,0,0,1)}
+    ],{duration:dur,delay:i*gap,easing:'ease-out',fill:'backwards'});
+    addBack(el,dur,.5,i*gap);
+  });
+}
+function layoutFan(){
+  const h=app.querySelector('.hand'); if(!h) return;
+  const n=h.children.length, W=h.clientWidth, mid=(n-1)/2;
+  const sp=n>1?Math.min(38,(W-50-44)/(n-1)):0;
+  h.style.setProperty('--sp',sp.toFixed(1)+'px');
+  h.style.setProperty('--deg',Math.min(4,30/Math.max(n,1)).toFixed(2));
+  h.style.setProperty('--cv',mid?Math.min(1.2,16/(mid*mid)).toFixed(3):'0');
+}
+function afterRender(){
+  /* 다시 그려도 빛 흐름·깜빡임이 끊기지 않게 시계에 맞춰 시작 위치를 맞춤 */
+  const t=performance.now(), rs=document.documentElement.style;
+  rs.setProperty('--t-spin',-(t%2400).toFixed(0)+'ms'); rs.setProperty('--t-pulse',-(t%1800).toFixed(0)+'ms');
+  layoutFan();
+  if(G) G.newTaken=null;   /* 새로 가져간 카드 강조는 한 번만 */
+  if(!G||G.phase==='handEnd'||!FX.ok()){FX.fly=FX.take=null; FX.deal=false; return;}
+  runDeal(); runFly(); runTake();
+}
+addEventListener('resize',layoutFan);
 
 app.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]'); if(!el||el.disabled) return;
@@ -541,7 +697,14 @@ app.addEventListener('click',e=>{
   else if(act==='setup'){gen++; G=null; render();}
   else if(act==='nexthand'){G.starter=G.opts.lead==='winner'?G.result.winner:(G.starter+1)%G.players.length; startHand();}
   else if(act==='sort'){UI.sort=UI.sort==='color'?'number':'color'; render();}
-  else if(act==='sel'){ if(G.phase==='pick') return; UI.sel.has(id)?UI.sel.delete(id):UI.sel.add(id); render(); }
+  else if(act==='sel'){
+    if(G.phase==='pick') return;
+    /* 다시 그리지 않고 클래스만 바꿔서 떠오르는 전환이 부드럽게 보이게 */
+    const on=!UI.sel.has(id); on?UI.sel.add(id):UI.sel.delete(id);
+    el.classList.toggle('sel',on); el.setAttribute('aria-pressed',String(on));
+    const b=app.querySelector('[data-act="play"]'), ps=playState();
+    if(b){b.textContent=ps.label; b.disabled=!ps.ok;}
+  }
   else if(act==='take'){ if(G.phase==='pick') humanPick(id); }
   else if(act==='pass'){ if(G.turn===0&&G.phase==='play'&&G.table){UI.sel.clear(); doPass(0);} }
   else if(act==='play'){
