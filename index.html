@@ -108,6 +108,11 @@ button.card{cursor:pointer}
 .score-table th{font-weight:500;color:var(--mist);font-size:12.5px}
 .score-table td.num,.score-table th.num{text-align:right;white-space:nowrap}
 .score-table tr.win td{color:var(--ember);font-weight:600}
+#record{background:var(--sea-2);border:1px solid var(--sea-3);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+#record b{font-weight:600}
+#record .w{color:#7fd38a}
+#record .l{color:#ff9b8a}
+#record small{color:var(--mist)}
 details{background:var(--sea-2);border:1px solid var(--sea-3);border-radius:12px;padding:10px 14px}
 summary{cursor:pointer;font-weight:600}
 details ul{margin:10px 0 0;padding-left:18px;color:#cfdbe1;max-width:65ch}
@@ -142,6 +147,7 @@ footer{color:var(--mist);font-size:12px}
     </div>
   </header>
   <main id="app"></main>
+  <div id="record" aria-live="polite"></div>
   <details>
     <summary>규칙 요약</summary>
     <ul>
@@ -268,6 +274,17 @@ const NAMES=['나','비요른','아스트리드','라그나','프레이야','시
 const SUIT_BY_ID=Object.fromEntries(SUITS.map(s=>[s.id,s]));
 const app=document.getElementById('app'), btnNew=document.getElementById('btn-new');
 let G=null, gen=0;
+/* 전적 (브라우저에 저장) */
+const REC_KEY='odin-record';
+function loadRec(){try{const r=JSON.parse(localStorage.getItem(REC_KEY));if(r&&typeof r.w==='number'&&typeof r.l==='number')return r;}catch(e){}return {w:0,l:0};}
+function saveRec(r){try{localStorage.setItem(REC_KEY,JSON.stringify(r));}catch(e){}}
+let REC=loadRec();
+function renderRec(){
+  const n=REC.w+REC.l, rate=n?Math.round(REC.w/n*100)+'%':'-';
+  document.getElementById('record').innerHTML='<span><b>내 전적</b> '+n+'전 <span class="w">'+REC.w+'승</span> <span class="l">'+REC.l+'패</span></span><small>승률 '+rate+'</small>';
+}
+function addRec(won){REC=loadRec(); won?REC.w++:REC.l++; saveRec(REC); renderRec();}
+renderRec();
 const UI={sel:new Set(),sort:'color',cfg:{n:3,target:15,goat:true,fourSuits:true,lead:'winner'}};
 
 /* 소리: 음원 파일 없이 Web Audio로 합성 */
@@ -418,6 +435,7 @@ function endHand(winner){
   const gains=G.players.map(p=>handPenalty(p.hand));
   G.players.forEach((p,i)=>p.score+=gains[i]);
   G.result={winner,gains,over:G.players.some(p=>p.score>=G.opts.target)};
+  if(G.result.over){const m=Math.min(...G.players.map(p=>p.score)); addRec(G.players[0].score===m);}
   log(G.players[winner].name+' 손패를 모두 비움');
   const g=gen;
   setTimeout(()=>{
