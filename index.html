@@ -113,6 +113,8 @@ button.card{cursor:pointer}
 #record .w{color:#7fd38a}
 #record .l{color:#ff9b8a}
 #record small{color:var(--mist)}
+.rec-end{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:var(--sea-3);font-variant-numeric:tabular-nums}
+.rec-end .w{color:#7fd38a;font-weight:600}.rec-end .l{color:#ff9b8a;font-weight:600}
 details{background:var(--sea-2);border:1px solid var(--sea-3);border-radius:12px;padding:10px 14px}
 summary{cursor:pointer;font-weight:600}
 details ul{margin:10px 0 0;padding-left:18px;color:#cfdbe1;max-width:65ch}
@@ -507,6 +509,7 @@ function renderHandEnd(){
   const winners=G.players.filter(p=>p.score===min).map(p=>p.name).join(', ');
   app.innerHTML='<section class="panel"><h2>'+(r.over?'게임 종료: '+esc(winners)+' 승리':G.handNo+'번째 판 종료')+'</h2>'
    +'<p class="sub" style="margin:0">'+(r.over?'-'+G.opts.target+'점에 도달한 사람이 나왔습니다. 감점이 가장 적은 사람이 이깁니다.':'남은 손패 1장당 -1점'+(G.opts.goat?', 심술 염소는 -5점':'')+'입니다.')+'</p>'
+   +(r.over?(()=>{const n=REC.w+REC.l;return '<p class="rec-end" role="status">'+(G.players[0].score===min?'<span class="w">이번 게임 승리</span>':'<span class="l">이번 게임 패배</span>')+' · 내 전적 <b>'+n+'전 '+REC.w+'승 '+REC.l+'패</b> (승률 '+(n?Math.round(REC.w/n*100):0)+'%) 저장됨</p>';})():'')
    +'<table class="score-table"><thead><tr><th>플레이어</th><th>남은 손패</th><th class="num">이번 판</th><th class="num">합계</th></tr></thead><tbody>'+rows+'</tbody></table>'
    +'<button class="btn primary" type="button" data-act="'+(r.over?'setup':'nexthand')+'" style="width:100%">'+(r.over?'새 게임 설정':'다음 판')+'</button></section>';
 }
