@@ -141,6 +141,7 @@ button.card{cursor:pointer}
   .hand .card:hover{--lift:-14px;z-index:3;animation:none;box-shadow:0 0 0 2px rgba(240,162,58,.75),0 0 18px rgba(240,162,58,.55)}}
 .hand .card.sel{--lift:-22px;z-index:2;animation:none;box-shadow:0 0 0 3px var(--ember),0 10px 22px rgba(240,162,58,.45)}
 .hand.limit .card:not(.can):not(.sel){filter:brightness(.6) saturate(.6)}
+.hand.predeal .card{visibility:hidden}   /* 손패 칸으로 스크롤하는 동안 숨겨 둠 */
 @keyframes canglow{
   0%,100%{box-shadow:-2px 3px 8px rgba(0,0,0,.35),0 0 0 0 rgba(240,162,58,0)}
   50%{box-shadow:-2px 3px 8px rgba(0,0,0,.35),0 0 0 2px rgba(240,162,58,.6),0 0 14px rgba(240,162,58,.45)}}
@@ -417,7 +418,7 @@ function log(t){G.log.unshift(t); if(G.log.length>5) G.log.length=5;}
 
 /* 진행 */
 function newGame(){
-  gen++;
+  gen++; FX.dealing=FX.predeal=false;
   const c=UI.cfg, opts={goat:c.goat,fourSuits:c.n===2&&c.fourSuits,target:c.target,lead:c.lead};
   G={opts,players:[],starter:Math.floor(Math.random()*c.n),handNo:0,log:[]};
   for(let i=0;i<c.n;i++) G.players.push({name:NAMES[i],human:i===0,hand:[],score:0});
@@ -441,7 +442,9 @@ function runTurn(){
   render();
   if(!G.players[G.turn].human){
     const g=gen;
-    setTimeout(()=>{ if(g===gen && G && G.phase==='play') aiAct(); },950);
+    /* 카드를 나눠 주는 동안에는 컴퓨터가 기다림 */
+    const tick=()=>{ if(g!==gen||!G||G.phase!=='play') return; if(FX.dealing){setTimeout(tick,300);return;} aiAct(); };
+    setTimeout(tick,950);
   }
 }
 function next(){G.turn=(G.turn+1)%G.players.length; runTurn();}
@@ -561,7 +564,7 @@ function renderGame(){
    +'<div class="status" role="status">'+esc(status)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>'
    +'<section class="me'+(myTurn||G.phase==='pick'?' turn':'')+'"><div class="top"><span><b>내 손패</b> '+me.hand.length+'장 · '+neg(me.score)+'점 (-'+G.opts.target+'점에 끝)</span>'
    +'<button class="btn small" type="button" data-act="sort">'+(UI.sort==='color'?'숫자순 정렬':'색깔순 정렬')+'</button></div>'
-   +'<div class="hand'+(can?' limit':'')+'">'+hs.map((c,i)=>cardHTML(c,{act:'sel',sel:UI.sel.has(c.id),can:can&&can.has(c.id),style:'--fo:'+(i-mid)})).join('')+'</div>'
+   +'<div class="hand'+(can?' limit':'')+(FX.predeal?' predeal':'')+'">'+hs.map((c,i)=>cardHTML(c,{act:'sel',sel:UI.sel.has(c.id),can:can&&can.has(c.id),style:'--fo:'+(i-mid)})).join('')+'</div>'
    +'<div class="actions"><button class="btn'+(can&&!can.size?' hint':'')+'" type="button" data-act="pass"'+(myTurn&&G.table?'':' disabled')+'>패스</button>'
    +'<button class="btn primary" type="button" data-act="play"'+(ps.ok?'':' disabled')+'>'+esc(playLabel)+'</button></div></section>'
    +'<ul class="log" aria-label="진행 기록">'+G.log.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul></div>';
@@ -596,7 +599,7 @@ function render(){
 
 /* 연출: 카드 날리기(FLIP), 3D 뒤집기, 부채꼴 손패 */
 const FLY_MS={me:520,ai:600};
-const FX={fly:null,take:null,deal:false,
+const FX={fly:null,take:null,deal:false,dealing:false,predeal:false,
   rm:window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):{matches:false},
   ok(){return !this.rm.matches&&typeof Element.prototype.animate==='function';}};
 function center(r){return {x:r.left+r.width/2,y:r.top+r.height/2};}
@@ -658,9 +661,36 @@ function runTake(){
 }
 function runDeal(){
   if(!FX.deal) return; FX.deal=false;
-  const tb=app.querySelector('.table'); if(!tb) return;
-  const from=center(tb.getBoundingClientRect()), dur=540, gap=40;
-  app.querySelectorAll('.hand .card').forEach((el,i)=>{
+  const me=app.querySelector('.me'); if(!me) return;
+  FX.dealing=true; FX.predeal=true;
+  app.querySelector('.hand').classList.add('predeal');
+  /* 먼저 내 손패 칸(카드 내기 버튼까지)이 화면에 다 보이게 스크롤한 뒤 나눠 줌 */
+  const y=handScrollY(me);
+  if(Math.abs(y-scrollY)<4){ setTimeout(dealCards,150); return; }
+  let done=false;
+  const go=()=>{ if(done) return; done=true; removeEventListener('scrollend',go); dealCards(); };
+  addEventListener('scrollend',go);
+  setTimeout(go,900);   /* scrollend를 지원하지 않는 브라우저 대비 */
+  scrollTo({top:y,behavior:'smooth'});
+}
+/* 손패 칸 아래 끝(카드 내기 버튼)이 화면 높이의 78% 지점에 오도록. 단, 손패 칸 윗부분이 잘리지 않게 */
+function handScrollY(me){
+  const vh=window.visualViewport?visualViewport.height:innerHeight;
+  const r=me.getBoundingClientRect(), top=r.top+scrollY, bottom=r.bottom+scrollY;
+  const maxY=document.documentElement.scrollHeight-innerHeight;
+  return Math.max(0,Math.min(bottom-vh*0.78,top-8,maxY));
+}
+function dealCards(){
+  FX.predeal=false;
+  const h=app.querySelector('.hand'), tb=app.querySelector('.table');
+  if(h) h.classList.remove('predeal');
+  if(!h||!tb||!G){FX.dealing=false; return;}
+  const tr=tb.getBoundingClientRect(), dur=540, gap=40;
+  /* 테이블이 화면 위로 벗어났으면 화면 위쪽 가장자리에서 날아옴 */
+  const from={x:tr.left+tr.width/2,y:Math.max(tr.top+tr.height/2,-20)};
+  const cards=h.querySelectorAll('.card');
+  setTimeout(()=>{FX.dealing=false;},dur+cards.length*gap+150);
+  cards.forEach((el,i)=>{
     const to=center(el.getBoundingClientRect()), dx=from.x-to.x, dy=from.y-to.y;
     el.animate([
       {transform:T3(dx,dy,-20,180,.6),opacity:0},
@@ -685,7 +715,9 @@ function afterRender(){
   rs.setProperty('--t-spin',-(t%2400).toFixed(0)+'ms'); rs.setProperty('--t-pulse',-(t%1800).toFixed(0)+'ms');
   layoutFan();
   if(G) G.newTaken=null;   /* 새로 가져간 카드 강조는 한 번만 */
-  if(!G||G.phase==='handEnd'||!FX.ok()){FX.fly=FX.take=null; FX.deal=false; return;}
+  if(!G||G.phase==='handEnd'||!FX.ok()){
+    if(G&&FX.deal&&G.phase!=='handEnd'){const me=app.querySelector('.me'); if(me) scrollTo(0,handScrollY(me));}
+    FX.fly=FX.take=null; FX.deal=false; return;}
   runDeal(); runFly(); runTake();
 }
 addEventListener('resize',layoutFan);
