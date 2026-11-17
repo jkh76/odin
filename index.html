@@ -145,7 +145,8 @@ button.card{cursor:pointer}
   .hand .card:hover{--lift:-14px;z-index:3;animation:none;box-shadow:0 0 0 2px rgba(240,162,58,.75),0 0 18px rgba(240,162,58,.55)}}
 .hand .card.sel{--lift:-22px;z-index:2;animation:none;box-shadow:0 0 0 3px var(--ember),0 10px 22px rgba(240,162,58,.45)}
 .hand.limit .card:not(.can):not(.sel){filter:brightness(.6) saturate(.6)}
-.hand.predeal .card{visibility:hidden}   /* 손패 칸으로 스크롤하는 동안 숨겨 둠 */
+.hand.predeal .card{visibility:hidden}
+.hand.nofx .card{transition:none}   /* 손패 칸으로 스크롤하는 동안 숨겨 둠 */
 @keyframes canglow{
   0%,100%{box-shadow:-2px 3px 8px rgba(0,0,0,.35),0 0 0 0 rgba(240,162,58,0)}
   50%{box-shadow:-2px 3px 8px rgba(0,0,0,.35),0 0 0 2px rgba(240,162,58,.6),0 0 14px rgba(240,162,58,.45)}}
@@ -707,11 +708,15 @@ function dealCards(){
 }
 function layoutFan(){
   const h=app.querySelector('.hand'); if(!h) return;
+  /* 다시 그린 직후 기본값 → 계산값으로 바뀔 때 카드가 움직이는 전환이 생기지 않게 잠시 끔 */
+  h.classList.add('nofx');
   const n=h.children.length, W=h.clientWidth, mid=(n-1)/2;
   const sp=n>1?Math.min(38,(W-50-44)/(n-1)):0;
   h.style.setProperty('--sp',sp.toFixed(1)+'px');
   h.style.setProperty('--deg',Math.min(4,30/Math.max(n,1)).toFixed(2));
   h.style.setProperty('--cv',mid?Math.min(1.2,16/(mid*mid)).toFixed(3):'0');
+  void h.offsetWidth;
+  h.classList.remove('nofx');
 }
 function afterRender(){
   /* 다시 그려도 빛 흐름·깜빡임이 끊기지 않게 시계에 맞춰 시작 위치를 맞춤 */
