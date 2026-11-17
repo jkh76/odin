@@ -154,8 +154,9 @@ button.card{cursor:pointer}
 .hand .card:first-child{margin-left:0}
 .hand .card:active{--lift:-10px}
 .hand .card.can{animation:canglow 1.8s ease-in-out infinite;animation-delay:var(--t-pulse,0ms)}
-@media (hover:hover){
-  .hand .card:hover{--lift:-14px;z-index:3;animation:none;box-shadow:0 0 0 2px rgba(240,162,58,.75),0 0 18px rgba(240,162,58,.55)}}
+/* 터치 화면은 누른 뒤에도 hover가 남아 카드가 떠 있으므로, 마우스(정밀 포인터)에서만 hover 효과 */
+@media (hover:hover) and (pointer:fine){
+  html:not(.touch) .hand .card:hover{--lift:-14px;z-index:3;animation:none;box-shadow:0 0 0 2px rgba(240,162,58,.75),0 0 18px rgba(240,162,58,.55)}}
 .hand .card.sel{--lift:-22px;z-index:2;animation:none;box-shadow:0 0 0 3px var(--ember),0 10px 22px rgba(240,162,58,.45)}
 .hand.limit .card:not(.can):not(.sel){filter:brightness(.6) saturate(.6)}
 .hand.predeal .card{visibility:hidden}
@@ -861,6 +862,8 @@ app.addEventListener('change',e=>{
 });
 btnNew.addEventListener('click',()=>{gen++; G=null; render();});
 document.addEventListener('click',()=>Snd.init(),true);
+/* 마지막 입력이 터치면 hover 효과를 끔 (일부 휴대폰 브라우저는 마우스처럼 hover를 보고함) */
+document.addEventListener('pointerdown',e=>document.documentElement.classList.toggle('touch',e.pointerType!=='mouse'),true);
 const btnSnd=document.getElementById('btn-snd');
 btnSnd.addEventListener('click',()=>{
   Snd.on=!Snd.on;
