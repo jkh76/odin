@@ -70,10 +70,10 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 .opp .nm i{font-style:normal;color:var(--mist);font-weight:400;font-variant-numeric:tabular-nums}
 .opp .cnt{font-size:13px;color:var(--mist)}
 .opp .cnt b{color:var(--ice);font-family:var(--font-display);font-weight:400;font-size:18px}
-.opp .act{font-size:12px;color:var(--ember);min-height:18px}
+.opp .act{font-size:12px;color:var(--ember);height:18px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .opp .warn{color:var(--danger)}
 /* 상대가 테이블에서 가장 최근에 가져간 카드 (다시 내기 전까지) */
-.opp .taken{display:flex;align-items:center;gap:3px;flex-wrap:wrap;min-height:30px;font-size:11.5px;color:var(--mist)}
+.opp .taken{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;height:34px;overflow:hidden;font-size:11.5px;color:var(--mist)}   /* 높이 고정: 카드가 생겨도 테이블이 밀리지 않게 */
 .opp .taken .card.mini{width:22px;height:32px;border-radius:4px}
 .opp .taken .card.mini .n{font-size:15px}.opp .taken .card.mini .s{font-size:7px}.opp .taken .card.mini::before{height:3px}
 .opp .taken .card.mini.goat .s{font-size:6px}
