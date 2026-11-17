@@ -78,6 +78,18 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 .opp .taken .card.mini .n{font-size:15px}.opp .taken .card.mini .s{font-size:7px}.opp .taken .card.mini::before{height:3px}
 .opp .taken .card.mini.goat .s{font-size:6px}
 .opp .taken .card.new{animation:takenNew 1.6s ease-out}
+.lead{display:inline-block;margin-left:6px;padding:0 6px;border-radius:6px;background:var(--ember);color:#231503;
+  font-size:11.5px;font-weight:700;line-height:18px;vertical-align:2px}   /* 이번 판 선 플레이어 배지 */
+/* 선 플레이어 룰렛 */
+.opp.spot,.me.spot{box-shadow:0 0 0 2px var(--ember),0 0 20px rgba(240,162,58,.65)}
+.opp.chosen,.me.chosen{animation:chosen .9s ease-out}
+@keyframes chosen{0%{box-shadow:0 0 0 3px #fff3cf,0 0 34px 6px rgba(240,162,58,.9)}100%{box-shadow:0 0 0 1px rgba(240,162,58,.4),0 0 0 rgba(240,162,58,0)}}
+.starter-pop{position:fixed;left:50%;top:40%;z-index:40;pointer-events:none;transform:translate(-50%,-50%);text-align:center;
+  background:#0f1b25;border:2px solid var(--ember);border-radius:14px;padding:10px 22px;box-shadow:0 10px 30px rgba(0,0,0,.5);
+  animation:pop 1.5s cubic-bezier(.2,.9,.3,1.3) forwards}
+.starter-pop b{display:block;font-family:var(--font-display);font-weight:400;font-size:30px;color:var(--ember);line-height:1.2}
+.starter-pop small{color:var(--mist);font-size:12.5px}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}25%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
 @keyframes takenNew{0%{transform:scale(1.6);box-shadow:0 0 0 3px var(--ember),0 0 14px var(--ember)}60%{transform:scale(1);box-shadow:0 0 0 2px var(--ember)}100%{box-shadow:none}}
 @media (prefers-reduced-motion:reduce){.opp .taken .card.new{animation:none}}
 
@@ -154,7 +166,6 @@ button.card{cursor:pointer}
 .actions .btn{flex:1}
 .actions .btn.primary{flex:2}
 
-.log{font-size:12.5px;color:var(--mist);margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
 .score-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin:6px 0 12px}
 .score-table th,.score-table td{padding:7px 4px;border-bottom:1px solid var(--sea-3);text-align:left;vertical-align:middle}
 .score-table th{font-weight:500;color:var(--mist);font-size:12.5px}
@@ -172,6 +183,31 @@ summary{cursor:pointer;font-weight:600}
 details ul{margin:10px 0 0;padding-left:18px;color:#cfdbe1;max-width:65ch}
 details li{margin-bottom:5px}
 footer{color:var(--mist);font-size:12px}
+footer .ver{font-variant-numeric:tabular-nums;opacity:.8}
+.col-l,.col-r{display:contents}
+
+/* 가로 화면: 왼쪽에 상대·테이블, 오른쪽에 안내·내 손패
+   (.col-l/.col-r는 세로 화면에서는 display:contents로 풀려 원래 순서대로 쌓임) */
+@media (orientation:landscape) and (min-width:600px){
+  .wrap{max-width:1100px;padding-top:8px;gap:10px}
+  h1{font-size:21px}
+  #app>.panel,#record,details,footer{width:100%;max-width:560px;margin-left:auto;margin-right:auto}
+  /* 좌우 두 묶음의 높이를 같게: 더 긴 쪽에 맞춰 테이블(왼쪽)과 손패 칸(오른쪽)이 늘어남 */
+  .game{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch}
+  .game .col-l,.game .col-r{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .game .table{height:auto;min-height:150px;flex:1 0 auto;padding:8px;gap:4px}
+  .game .me{flex:1 0 auto}
+  .game .me .hand{flex:1;align-items:center}
+  .game .status{height:66px}
+  /* 상대 칸: 한 줄에 2명씩 가로로 길게, 홀수면 마지막 칸은 한 줄 전체
+     칸 안: 1줄 이름·점수, 2줄 손패 수·행동, 오른쪽에 가져간 카드 */
+  .opps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .opps .opp:last-child:nth-child(odd){grid-column:1/-1}
+  .opp{padding:6px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-areas:"nm nm taken" "cnt act taken";column-gap:10px;row-gap:0;align-items:center}
+  .opp .nm{grid-area:nm}.opp .cnt{grid-area:cnt;line-height:24px}.opp .act{grid-area:act;text-align:right}
+  .opp .taken{grid-area:taken;font-size:0;width:22px;justify-content:center}
+}
 
 /* 게임 종료 승패 글자 */
 .burst{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:50}
@@ -216,7 +252,7 @@ footer{color:var(--mist);font-size:12px}
       <li>프로모 카드 심술 염소(0): 어떤 색으로든 쓸 수 있는 0입니다. 판이 끝날 때 손에 있으면 -5점입니다.</li>
     </ul>
   </details>
-  <footer>개인 연습용으로 만든 비공식 구현입니다. 원작 게임 Odin은 Helvetiq에서 출판했고, 이 페이지는 원작 그림을 쓰지 않습니다.</footer>
+  <footer>개인 연습용으로 만든 비공식 구현입니다. 원작 게임 Odin은 Helvetiq에서 출판했고, 이 페이지는 원작 그림을 쓰지 않습니다.<br><span class="ver">v1.0 2026-11-17</span></footer>
 </div>
 
 <script>
@@ -369,6 +405,8 @@ const Snd={
     g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+0.03);
   },
+  tick(){ if(!this.ready()) return; try{this.tone(1400,0,0.035,'square',0.04);}catch(e){} },
+  pick(){ if(!this.ready()) return; try{this.tone(988,0,0.12,'triangle',0.15); this.tone(1319,0.1,0.35,'triangle',0.16); this.tone(1976,0.13,0.3,'sine',0.07);}catch(e){} },
   card(){
     if(!this.ready()) return;
     try{
@@ -434,7 +472,7 @@ function startHand(){
   const deck=shuffle(buildDeck(G.opts));
   for(const p of G.players){p.hand=deck.splice(0,9); p.taken=null;}
   FX.deal=true;
-  G.table=null; G.turn=G.starter; G.phase='play'; G.acts={}; G.pick=null; G.result=null; G.note='';
+  G.table=null; G.turn=G.starter; G.phase='reveal';   /* 선 플레이어 연출이 끝나면 'play' */ G.acts={}; G.pick=null; G.result=null; G.note='';
   UI.sel.clear();
   log(G.handNo+'번째 판 시작. '+G.players[G.starter].name+'부터');
   runTurn();
@@ -448,7 +486,7 @@ function runTurn(){
   if(!G.players[G.turn].human){
     const g=gen;
     /* 카드를 나눠 주는 동안에는 컴퓨터가 기다림 */
-    const tick=()=>{ if(g!==gen||!G||G.phase!=='play') return; if(FX.dealing){setTimeout(tick,300);return;} aiAct(); };
+    const tick=()=>{ if(g!==gen||!G) return; if(FX.dealing||G.phase==='reveal'){setTimeout(tick,300);return;} if(G.phase!=='play') return; aiAct(); };
     setTimeout(tick,950);
   }
 }
@@ -529,17 +567,22 @@ function renderSetup(){
 }
 function oppHTML(p,i){
   const act=G.acts[i]||'';
-  return '<div class="opp'+(G.turn===i&&G.phase!=='handEnd'?' turn':'')+'" data-i="'+i+'"><div class="nm"><span>'+esc(p.name)+'</span><i>'+neg(p.score)+'점</i></div>'
+  return '<div class="opp'+(G.turn===i&&G.phase!=='handEnd'&&G.phase!=='reveal'?' turn':'')+'" data-i="'+i+'"><div class="nm"><span>'+esc(p.name)+leadBadge(i)+'</span><i>'+neg(p.score)+'점</i></div>'
     +'<div class="cnt">손패 <b'+(p.hand.length<=2?' class="warn"':'')+'>'+p.hand.length+'</b>장</div>'
     +'<div class="taken" aria-label="가져간 카드">'+(p.taken
         ?cardHTML(p.taken,{mini:true}).replace('class="card','class="'+(p.taken.id===G.newTaken?'card new':'card'))+' 방금 가져감'
         :'가져간 카드 없음')+'</div>'
     +'<div class="act">'+esc(G.turn===i&&G.phase==='play'&&!act?'생각 중…':act)+'</div></div>';
 }
+function leadBadge(i){return G.phase!=='reveal'&&i===G.starter?'<span class="lead" title="이번 판 선">선</span>':'';}
 function tableHTML(){
+  if(G.phase==='reveal') return '<div class="who">테이블이 비어 있습니다</div><div class="val">누가 먼저 시작할까요?</div>';
   if(G.phase==='pick')
     return '<div class="who">방금 이긴 카드</div><div class="row">'+G.pick.map(c=>cardHTML(c,{act:'take',pick:true})).join('')+'</div><div class="val">가져올 카드 1장을 누르세요</div>';
-  if(!G.table) return '<div class="who">테이블이 비어 있습니다</div><div class="val">'+esc(G.players[G.turn].name)+'이(가) 1장으로 시작</div>';
+  if(!G.table){
+    const p=G.players[G.turn], all=p.human&&p.hand.length>1&&isSet(p.hand);
+    return '<div class="who">테이블이 비어 있습니다</div><div class="val">'+(p.human?'내가 ':esc(p.name)+'이(가) ')+(all?'1장 또는 모두 내기로':'1장으로')+' 시작</div>';
+  }
   return '<div class="who">'+esc(G.players[G.table.owner].name)+'이(가) 낸 카드</div><div class="row">'+G.table.cards.map(c=>cardHTML(c)).join('')+'</div><div class="val">값 '+G.table.value+'</div>';
 }
 function selectedCards(){return G.players[0].hand.filter(c=>UI.sel.has(c.id));}
@@ -556,23 +599,28 @@ function renderGame(){
   let status,sub='';
   if(G.phase==='pick'){status='가져올 카드를 고르세요'; sub='고르지 않은 카드는 버려집니다.';}
   else if(myTurn){
-    if(!G.table){status='내 차례: 1장을 내서 라운드를 시작하세요'; sub='손패 전체가 같은 색이거나 같은 숫자면 전부 낼 수 있어요.';}
+    if(!G.table){
+      /* 손패 전체가 같은 색이거나 같은 숫자면 한 번에 모두 낼 수 있음 */
+      if(me.hand.length>1&&isSet(me.hand)){status='내 차례: 1장 또는 모두('+me.hand.length+'장) 내기'; sub='손패 전체가 같은 '+(me.hand.filter(c=>!c.goat).every((c,_,a)=>c.s===a[0].s)?'색':'숫자')+'이라 한 번에 모두 낼 수 있어요.';}
+      else{status='내 차례: 1장을 내서 라운드를 시작하세요'; sub='';}
+    }
     else{status='내 차례: '+G.table.count+'장 또는 '+(G.table.count+1)+'장, '+G.table.value+'보다 큰 값'; sub='낼 수 없거나 아끼고 싶으면 패스하세요.';}
     if(G.note) sub=G.note+' '+sub;
-  }else{status=G.players[G.turn].name+'의 차례'; sub=G.note;}
+  }else if(G.phase==='reveal'){status='선 플레이어를 정하는 중…'; sub='';}
+  else{status=G.players[G.turn].name+'의 차례'; sub=G.note;}
   const ps=playState(), playLabel=ps.label;
   const hs=sortHand(me.hand), mid=(hs.length-1)/2;
   const can=(myTurn&&G.table)?new Set(legalPlays(me.hand,G.table).flat().map(c=>c.id)):null;
-  app.innerHTML='<div class="wrap" style="padding:0">'
-   +'<div class="opps">'+G.players.map((p,i)=>i?oppHTML(p,i):'').join('')+'</div>'
-   +'<div class="table">'+tableHTML()+'</div>'
-   +'<div class="status" role="status">'+esc(status)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>'
-   +'<section class="me'+(myTurn||G.phase==='pick'?' turn':'')+'"><div class="top"><span><b>내 손패</b> '+me.hand.length+'장 · '+neg(me.score)+'점 (-'+G.opts.target+'점에 끝)</span>'
+  app.innerHTML='<div class="wrap game" style="padding:0">'
+   +'<div class="col-l"><div class="opps">'+G.players.map((p,i)=>i?oppHTML(p,i):'').join('')+'</div>'
+   +'<div class="table">'+tableHTML()+'</div></div>'
+   +'<div class="col-r"><div class="status" role="status">'+esc(status)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>'
+   +'<section class="me'+(myTurn||G.phase==='pick'?' turn':'')+'"><div class="top"><span><b>내 손패</b>'+leadBadge(0)+' '+me.hand.length+'장 · '+neg(me.score)+'점 (-'+G.opts.target+'점에 끝)</span>'
    +'<button class="btn small" type="button" data-act="sort">'+(UI.sort==='color'?'숫자순 정렬':'색깔순 정렬')+'</button></div>'
    +'<div class="hand'+(can?' limit':'')+(FX.predeal?' predeal':'')+'">'+hs.map((c,i)=>cardHTML(c,{act:'sel',sel:UI.sel.has(c.id),can:can&&can.has(c.id),style:'--fo:'+(i-mid)})).join('')+'</div>'
    +'<div class="actions"><button class="btn'+(can&&!can.size?' hint':'')+'" type="button" data-act="pass"'+(myTurn&&G.table?'':' disabled')+'>패스</button>'
    +'<button class="btn primary" type="button" data-act="play"'+(ps.ok?'':' disabled')+'>'+esc(playLabel)+'</button></div></section>'
-   +'<ul class="log" aria-label="진행 기록">'+G.log.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul></div>';
+   +'</div></div>';
 }
 function renderHandEnd(){
   const r=G.result, min=Math.min(...G.players.map(p=>p.score));
@@ -679,22 +727,25 @@ function runDeal(){
   scrollTo({top:y,behavior:'smooth'});
 }
 /* 손패 칸 아래 끝(카드 내기 버튼)이 화면 높이의 78% 지점에 오도록. 단, 손패 칸 윗부분이 잘리지 않게 */
+const LANDSCAPE=window.matchMedia?matchMedia('(orientation:landscape) and (min-width:600px)'):{matches:false};
 function handScrollY(me){
   const vh=window.visualViewport?visualViewport.height:innerHeight;
   const r=me.getBoundingClientRect(), top=r.top+scrollY, bottom=r.bottom+scrollY;
   const maxY=document.documentElement.scrollHeight-innerHeight;
+  /* 가로 화면에서는 게임 영역 맨 위로 맞춰 왼쪽(상대·테이블)과 오른쪽(손패)이 함께 보이게 */
+  if(LANDSCAPE.matches){const g=app.querySelector('.game'); if(g) return Math.max(0,Math.min(g.getBoundingClientRect().top+scrollY-6,maxY));}
   return Math.max(0,Math.min(bottom-vh*0.78,top-8,maxY));
 }
 function dealCards(){
   FX.predeal=false;
   const h=app.querySelector('.hand'), tb=app.querySelector('.table');
   if(h) h.classList.remove('predeal');
-  if(!h||!tb||!G){FX.dealing=false; return;}
+  if(!h||!tb||!G){FX.dealing=false; revealStarter(); return;}
   const tr=tb.getBoundingClientRect(), dur=540, gap=40;
   /* 테이블이 화면 위로 벗어났으면 화면 위쪽 가장자리에서 날아옴 */
   const from={x:tr.left+tr.width/2,y:Math.max(tr.top+tr.height/2,-20)};
   const cards=h.querySelectorAll('.card');
-  setTimeout(()=>{FX.dealing=false;},dur+cards.length*gap+150);
+  setTimeout(()=>{FX.dealing=false; revealStarter();},dur+cards.length*gap+150);
   cards.forEach((el,i)=>{
     const to=center(el.getBoundingClientRect()), dx=from.x-to.x, dy=from.y-to.y;
     el.animate([
@@ -726,8 +777,46 @@ function afterRender(){
   if(G) G.newTaken=null;   /* 새로 가져간 카드 강조는 한 번만 */
   if(!G||G.phase==='handEnd'||!FX.ok()){
     if(G&&FX.deal&&G.phase!=='handEnd'){const me=app.querySelector('.me'); if(me) scrollTo(0,handScrollY(me));}
-    FX.fly=FX.take=null; FX.deal=false; return;}
+    FX.fly=FX.take=null; FX.deal=false;
+    if(G&&G.phase==='reveal') setTimeout(()=>{ if(G&&G.phase==='reveal'){G.phase='play'; render();} },0);   /* 연출 없이 바로 시작 */
+    return;}
   runDeal(); runFly(); runTake();
+}
+/* 선 플레이어 공개: 첫 판은 빛이 돌다가 멈추는 룰렛, 다음 판부터는 선 칸만 반짝임 */
+function revealStarter(){
+  if(!G||G.phase!=='reveal') return;
+  const g=gen, n=G.players.length, st=G.starter;
+  const box=i=>i===0?app.querySelector('.me'):app.querySelector('.opp[data-i="'+i+'"]');
+  const clear=()=>app.querySelectorAll('.spot').forEach(e=>e.classList.remove('spot'));
+  const finish=()=>{
+    if(g!==gen||!G||G.phase!=='reveal') return;
+    clear();
+    const b=box(st); if(b) b.classList.add('chosen');
+    Snd.pick();
+    const p=G.players[st];
+    const why=G.handNo===1?'무작위로 정했어요':G.opts.lead==='winner'?'지난 판에 손패를 먼저 턴 사람':'차례대로 돌아가며 선';
+    const el=document.createElement('div'); el.className='starter-pop'; el.setAttribute('role','status');
+    el.innerHTML='<b>'+(p.human?'내가 선!':esc(p.name)+' 선!')+'</b><small>'+why+'</small>';
+    /* 테이블 가운데에 띄움 (테이블이 화면 밖이면 화면 위쪽) */
+    const tb=app.querySelector('.table');
+    if(tb){const r=tb.getBoundingClientRect(); el.style.top=Math.max(70,r.top+r.height/2)+'px'; el.style.left=(r.left+r.width/2)+'px';}
+    document.body.appendChild(el); setTimeout(()=>el.remove(),1500);
+    /* 반짝임을 잠깐 보여 준 뒤 게임 진행 (배지와 차례 빛이 나타남) */
+    setTimeout(()=>{ if(g!==gen||!G||G.phase!=='reveal') return; G.phase='play'; render(); },700);
+  };
+  if(G.handNo>1){ finish(); return; }
+  /* 선까지 최소 두 바퀴 돌고, 점점 느려지며 멈춤 */
+  const steps=2*n+st+1; let k=0;
+  const step=()=>{
+    if(g!==gen||!G||G.phase!=='reveal') return;
+    clear();
+    const b=box(k%n); if(b) b.classList.add('spot');
+    Snd.tick();
+    k++;
+    if(k>=steps){ setTimeout(finish,260); return; }
+    const t=k/steps; setTimeout(step,55+300*t*t*t);
+  };
+  step();
 }
 addEventListener('resize',layoutFan);
 
