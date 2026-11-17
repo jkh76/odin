@@ -82,12 +82,16 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 @media (prefers-reduced-motion:reduce){.opp .taken .card.new{animation:none}}
 
 /* 테이블 */
-.table{background:#0f1b25;border:1px dashed var(--sea-3);border-radius:14px;padding:12px;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
+.table{background:#0f1b25;border:1px dashed var(--sea-3);border-radius:14px;padding:12px;height:172px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
 .table .who{font-size:13px;color:var(--mist)}
 .table .val{font-family:var(--font-display);font-size:18px}
 .row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.status{background:var(--sea-2);border-left:4px solid var(--ember);border-radius:8px;padding:9px 12px;font-weight:500}
-.status small{display:block;color:var(--mist);font-weight:400}
+.status{background:var(--sea-2);border-left:4px solid var(--ember);border-radius:8px;padding:9px 12px;font-weight:500;
+  height:78px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.status small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--mist);font-weight:400}
+/* 테이블과 안내 칸은 높이를 고정해서, 차례가 바뀔 때 아래 손패 칸이 움직이지 않게 */
+.table .row{flex-wrap:nowrap;max-width:100%}
+.table .row .card{flex:0 1 50px;min-width:0}
 
 /* 카드 */
 .card{--c:var(--k);position:relative;width:50px;height:74px;border-radius:8px;border:2px solid var(--c);background:var(--bone);color:var(--c);
