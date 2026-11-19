@@ -191,11 +191,14 @@ footer .ver{display:block;text-align:center;margin-top:1.5em;font-variant-numeri
 /* 가로 화면: 왼쪽에 상대·테이블, 오른쪽에 안내·내 손패
    (.col-l/.col-r는 세로 화면에서는 display:contents로 풀려 원래 순서대로 쌓임) */
 @media (orientation:landscape) and (min-width:600px){
-  .wrap{max-width:1100px;padding-top:8px;gap:10px}
+  .wrap{max-width:calc(1100px * var(--gz,1));padding-top:8px;gap:10px}   /* 확대해도 게임 영역 폭이 줄지 않게 */
+  .opp .nm,.opp .nm i{white-space:nowrap}
   h1{font-size:21px}
   #app>.panel,#record,details,footer{width:100%;max-width:560px;margin-left:auto;margin-right:auto}
   /* 좌우 두 묶음의 높이를 같게: 더 긴 쪽에 맞춰 테이블(왼쪽)과 손패 칸(오른쪽)이 늘어남 */
   .game{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch}
+  /* 화면 높이를 꽉 채움 (판 시작 때 게임 영역 위끝으로 스크롤하므로 위아래 여백만 뺌) */
+  .game{zoom:var(--gz,1);min-height:var(--gh,0px)}   /* --gz, --gh는 updateZoom()이 실제 보이는 화면 높이에 맞춰 계산 */
   .game .col-l,.game .col-r{display:flex;flex-direction:column;gap:10px;min-width:0}
   .game .table{height:auto;min-height:150px;flex:1 0 auto;padding:8px;gap:4px}
   .game .me{flex:1 0 auto}
@@ -691,7 +694,7 @@ function runFly(){
   const dur=f.human?FLY_MS.me:FLY_MS.ai, gap=60;
   els.forEach((el,i)=>{
     const src=f.from[el.dataset.cid]; if(!src) return;
-    const to=center(el.getBoundingClientRect()), dx=src.x-to.x, dy=src.y-to.y;
+    const to=center(el.getBoundingClientRect()), dx=(src.x-to.x)/GZ, dy=(src.y-to.y)/GZ;
     const spin=src.rot+(Math.random()*2-1)*26, ry=f.human?0:180, s0=f.human?1:.45;
     el.animate([
       {transform:T3(dx,dy,spin,ry,s0),easing:'cubic-bezier(.3,.6,.4,1)'},
@@ -709,7 +712,7 @@ function runFly(){
 function runTake(){
   const t=FX.take; if(!t) return; FX.take=null;
   const el=app.querySelector('.hand [data-id="'+t.id+'"]'); if(!el) return;
-  const to=center(el.getBoundingClientRect()), dx=t.from.x-to.x, dy=t.from.y-to.y, dur=700, delay=120;
+  const to=center(el.getBoundingClientRect()), dx=(t.from.x-to.x)/GZ, dy=(t.from.y-to.y)/GZ, dur=700, delay=120;
   el.animate([
     {transform:T3(dx,dy,0,180,.9)},
     {transform:T3(dx*.3,dy*.3-30,0,90,1.12),offset:.5},
@@ -753,7 +756,7 @@ function dealCards(){
   const cards=h.querySelectorAll('.card');
   setTimeout(()=>{FX.dealing=false; revealStarter();},dur+cards.length*gap+150);
   cards.forEach((el,i)=>{
-    const to=center(el.getBoundingClientRect()), dx=from.x-to.x, dy=from.y-to.y;
+    const to=center(el.getBoundingClientRect()), dx=(from.x-to.x)/GZ, dy=(from.y-to.y)/GZ;
     el.animate([
       {transform:T3(dx,dy,-20,180,.6),opacity:0},
       {transform:T3(dx*.35,dy*.35,-6,90,.95),opacity:1,offset:.5},
@@ -775,7 +778,29 @@ function layoutFan(){
   void h.offsetWidth;
   h.classList.remove('nofx');
 }
+/* 가로 화면: 게임 영역이 실제로 보이는 화면 높이(주소창·툴바 제외)에 딱 맞도록
+   내용의 원래 높이를 재서 배율(GZ)을 정함. 0.8~1.6배, 폭이 좁으면 배율을 줄임.
+   zoom 안에서 애니메이션 이동 거리는 화면 px를 GZ로 나눠서 씀 */
+let GZ=1, zoomKey='';
+function updateZoom(force){
+  const rs=document.documentElement.style, g=app.querySelector('.game');
+  if(!LANDSCAPE.matches||!g){ GZ=1; zoomKey=''; rs.setProperty('--gz',1); rs.setProperty('--gh','0px'); return; }
+  const vh=(window.visualViewport?visualViewport.height:innerHeight)-12;
+  /* 같은 화면 크기·인원이면 다시 재지 않음 (재는 동안 페이지 높이가 바뀌어 스크롤이 튀므로) */
+  const key=G.players.length+'|'+Math.round(vh)+'|'+innerWidth;
+  if(key===zoomKey&&!force) return;
+  zoomKey=key;
+  const sy=scrollY;
+  rs.setProperty('--gz',1); rs.setProperty('--gh','0px');
+  const natural=g.offsetHeight;   /* 배율 1, 늘이기 전 높이 */
+  GZ=Math.max(.8,Math.min(vh/natural,innerWidth/844,1.6));
+  GZ=Math.floor(GZ*100)/100;
+  rs.setProperty('--gz',GZ);
+  rs.setProperty('--gh',Math.max(0,Math.floor(vh/GZ))+'px');
+  scrollTo(0,sy);
+}
 function afterRender(){
+  updateZoom();
   /* 다시 그려도 빛 흐름·깜빡임이 끊기지 않게 시계에 맞춰 시작 위치를 맞춤 */
   const t=performance.now(), rs=document.documentElement.style;
   rs.setProperty('--t-spin',-(t%2400).toFixed(0)+'ms'); rs.setProperty('--t-pulse',-(t%1800).toFixed(0)+'ms');
@@ -824,7 +849,7 @@ function revealStarter(){
   };
   step();
 }
-addEventListener('resize',layoutFan);
+addEventListener('resize',()=>{updateZoom(); layoutFan();});
 
 app.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]'); if(!el||el.disabled) return;
